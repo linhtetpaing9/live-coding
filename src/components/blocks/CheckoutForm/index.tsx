@@ -12,6 +12,9 @@ import {
     validateCardNumber,
     formatCardNumber,
     formatCardExpiry,
+    parseCardType,
+    validateCardExpiry,
+    validateCardCVC,
 } from "creditcardutils"
 
 // Styled Elements
@@ -82,21 +85,69 @@ const CheckoutForm: FC<CheckoutFormProps> = ({
 
                     return value
                 })
+                .custom((value, helpers) => {
+                    const validateCardType = (cardType: string) => {
+                        const allowTypes: string[] = ["visa", "mastercard"]
+                        return allowTypes.some((type) => type === cardType)
+                    }
+                    const cardType: string = parseCardType(value)
+
+                    if (value) {
+                        if (!validateCardType(cardType)) {
+                            return helpers.error("string.cardType")
+                        }
+                    }
+
+                    return value
+                })
                 .required()
                 .messages({
                     "string.empty": "Required",
                     "string.cardNumber": "Must be a valid card",
+                    "string.cardType":
+                        "Must be a valid card type (only allow visa, mastercard)",
                     "any.required": "Required",
                 }),
-            card_expire: Joi.string().required().messages({
-                "string.empty": "Required",
-                "any.required": "Required",
-            }),
-            cvv: Joi.string().length(3).required().messages({
-                "string.empty": "Required",
-                "string.length": "Maximum 3 digits",
-                "any.required": "Required",
-            }),
+            card_expire: Joi.string()
+                .custom((value, helpers) => {
+                    const [month, year] = value
+                        .split("/")
+                        .map((item: string) => item.trim())
+                    if (value) {
+                        if (!validateCardExpiry(month, year)) {
+                            return helpers.error("string.expiry")
+                        }
+                    }
+
+                    return value
+                })
+                .required()
+                .messages({
+                    "string.empty": "Required",
+                    "string.expiry": "Must be valid date",
+                    "any.required": "Required",
+                }),
+            cvv: Joi.string()
+                .custom((value, helpers) => {
+
+                    const cardType: string = parseCardType(value)
+
+                    if (value) {
+                        if (!validateCardCVC(value, cardType)) {
+                            return helpers.error("string.cvc")
+                        }
+                    }
+
+                    return value
+                })
+                .length(3)
+                .required()
+                .messages({
+                    "string.empty": "Required",
+                    "string.length": "Maximum 3 digits",
+                    "string.cvc": "Must be valid cvc",
+                    "any.required": "Required",
+                }),
         }),
     })
 
