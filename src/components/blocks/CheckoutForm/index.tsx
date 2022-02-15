@@ -86,11 +86,12 @@ const CheckoutForm: FC<CheckoutFormProps> = ({
                     return value
                 })
                 .custom((value, helpers) => {
+                    const cardType: string = parseCardType(value)
+
                     const validateCardType = (cardType: string) => {
                         const allowTypes: string[] = ["visa", "mastercard"]
                         return allowTypes.some((type) => type === cardType)
                     }
-                    const cardType: string = parseCardType(value)
 
                     if (value) {
                         if (!validateCardType(cardType)) {
@@ -129,7 +130,6 @@ const CheckoutForm: FC<CheckoutFormProps> = ({
                 }),
             cvv: Joi.string()
                 .custom((value, helpers) => {
-
                     const cardType: string = parseCardType(value)
 
                     if (value) {
@@ -164,6 +164,17 @@ const CheckoutForm: FC<CheckoutFormProps> = ({
         e.preventDefault()
 
         onSuccess(state.$data)
+    }
+
+    const displayCardTypes = (
+        value: TypeCheckoutFormDefaultValues,
+        type: string
+    ) => {
+        const cardType = parseCardType(value.card_number)
+        if (cardType != null && cardType == type) {
+            return `active-${type}`
+        }
+        return ""
     }
 
     const formatter = {
@@ -213,14 +224,32 @@ const CheckoutForm: FC<CheckoutFormProps> = ({
                                 Card information
                             </FieldLabel>
 
-                            <Input
-                                {...register.input({
-                                    name: "card_number",
-                                    onChange: formatter.cardNumber,
-                                })}
-                                type="text"
-                                placeholder="1234 1234 1234 1234"
-                            />
+                            <div className="input-card-number">
+                                <Input
+                                    {...register.input({
+                                        name: "card_number",
+                                        onChange: formatter.cardNumber,
+                                    })}
+                                    type="text"
+                                    placeholder="1234 1234 1234 1234"
+                                />
+                                <div className="input-card-img">
+                                    <img
+                                        className={displayCardTypes(
+                                            state.$data,
+                                            "visa"
+                                        )}
+                                        src="/visa.png"
+                                    />
+                                    <img
+                                        className={displayCardTypes(
+                                            state.$data,
+                                            "mastercard"
+                                        )}
+                                        src="/mastercard.png"
+                                    />
+                                </div>
+                            </div>
                         </FieldControl>
 
                         {getErrors("card_number") && (
@@ -263,7 +292,10 @@ const CheckoutForm: FC<CheckoutFormProps> = ({
                 </FieldGroups>
 
                 <Actions>
-                    <button disabled={state.$auto_invalid || loading}>
+                    <button
+                        className="btn-submit"
+                        disabled={state.$auto_invalid || loading}
+                    >
                         {submitText}
                     </button>
                 </Actions>
