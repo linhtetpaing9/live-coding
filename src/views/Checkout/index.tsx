@@ -73,21 +73,23 @@ const PageCheckout: FC<InterfaceCheckoutProps> = ({
     )
 
     const onSubmit = (values: TypeCheckoutFormValues) => {
-        toast.promise(
-            post({
-                paymentInfo: {
-                    cardInfo: {
-                        cardNo: `${values.card_number}`,
-                        cardCVV: `${values.cvv}`,
-                        cardExpiryDate: `${values.card_expire}`,
-                    },
-                    email: `${values.email}`,
+        const payload = {
+            requestId: "12344556",
+            paymentInfo: {
+                cardInfo: {
+                    cardNo: `${values.card_number}`,
+                    cardCVV: `${values.cvv}`,
+                    cardExpiryDate: `${values.card_expire}`,
                 },
-                products: CartItems.map((product) => ({
-                    id: product.id,
-                    quantity: product.qty,
-                })),
-            }),
+                email: `${values.email}`,
+            },
+            products: CartItems.map((product) => ({
+                id: product.id + "",
+                quantity: product.qty,
+            })),
+        }
+        toast.promise(
+            post(payload),
             {
                 loading: "Paying...",
                 success: "Success",

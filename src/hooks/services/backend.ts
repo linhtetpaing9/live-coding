@@ -25,6 +25,7 @@ export type TypePaymentState = defaultState & {
 }
 
 export type TypePaymentRequest = {
+    requestId: string
     paymentInfo: {
         email: string
         cardInfo: {
@@ -108,7 +109,8 @@ export const postPayment = () => {
         error: null,
     }
 
-    const { Request, state, setState, successResolver, isCancel } = useApiBackend<TypePaymentState>(defaultState)
+    const { Request, state, setState, successResolver, isCancel } =
+        useApiBackend<TypePaymentState>(defaultState)
 
     const post = useCallback(
         async (payload: TypePaymentRequest) => {
@@ -123,15 +125,15 @@ export const postPayment = () => {
             const Api = Request({
                 method: "post",
                 url: `/pay`,
-                params: payload,
+                data: payload,
             })
                 .then(successResolver)
                 // Success
                 .then((data = defaultState.data) => {
-                     setState((old: any) => ({
-                         ...old,
-                         data: data.data.products,
-                     }))
+                    setState((old: any) => ({
+                        ...old,
+                        data: data.data.cardInfo,
+                    }))
                 })
                 // Error
                 .catch((err) => {
